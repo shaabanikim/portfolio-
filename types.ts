@@ -20,8 +20,16 @@ export interface Contact {
   instagram: string;
 }
 
+export interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  fileUrl: string;
+}
+
 export interface Portfolio {
   profile: Profile;
   projects: Project[];
   contact: Contact;
+  resources: Resource[];
 }

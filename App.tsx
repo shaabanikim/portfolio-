@@ -1,30 +1,60 @@
-
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { Header } from './components/Header';
 import { EditPane } from './components/EditPane';
 import { PreviewPane } from './components/PreviewPane';
-import { Header } from './components/Header';
-import type { Portfolio } from './types';
+import { ProjectModal } from './components/ProjectModal';
+import type { Portfolio, Project } from './types';
 import { PRESET_PORTFOLIO } from './constants';
+import { updatePortfolioWithAI } from './services/geminiService';
 
-const App: React.FC = () => {
+function App() {
   const [portfolio, setPortfolio] = useState<Portfolio>(PRESET_PORTFOLIO);
-  const [isEditMode, setIsEditMode] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handlePortfolioChange = useCallback((updatedPortfolio: Partial<Portfolio>) => {
+    setPortfolio(prev => ({ ...prev, ...updatedPortfolio }));
+  }, []);
+
+  const handleGenerateWithAI = useCallback(async (prompt: string) => {
+    setIsGenerating(true);
+    try {
+      const updatedPortfolio = await updatePortfolioWithAI(portfolio, prompt);
+      setPortfolio(updatedPortfolio);
+    } catch (error) {
+      console.error("Failed to update portfolio with AI:", error);
+      alert("An error occurred while using AI. Please check your API key and try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [portfolio]);
+
+  const openProjectModal = (project: Project) => setSelectedProject(project);
+  const closeProjectModal = () => setSelectedProject(null);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <Header isEditMode={isEditMode} onToggleMode={() => setIsEditMode(!isEditMode)} />
-      <main className="flex flex-col md:flex-row">
-        <div 
-          className={`w-full md:w-1/3 lg:w-1/4 xl:w-1/5 bg-white border-r border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ease-in-out ${isEditMode ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative top-16 md:top-0 h-[calc(100vh-4rem)] md:h-auto md:min-h-[calc(100vh-4rem)] z-20`}
-        >
-          <EditPane portfolio={portfolio} setPortfolio={setPortfolio} />
-        </div>
-        <div className="w-full p-4 md:p-8 mt-16 md:mt-0">
-          <PreviewPane portfolio={portfolio} />
-        </div>
+    <div className="flex flex-col h-screen bg-gray-100 font-sans">
+      <Header />
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 p-8 overflow-hidden">
+        <EditPane
+          portfolio={portfolio}
+          onPortfolioChange={handlePortfolioChange}
+          onGenerateWithAI={handleGenerateWithAI}
+          isGenerating={isGenerating}
+        />
+        <PreviewPane
+          portfolio={portfolio}
+          onProjectClick={openProjectModal}
+        />
       </main>
+      {selectedProject && (
+        <ProjectModal
+          project={selectedProject}
+          onClose={closeProjectModal}
+        />
+      )}
     </div>
   );
-};
+}
 
 export default App;

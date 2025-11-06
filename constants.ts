@@ -36,4 +36,18 @@ export const PRESET_PORTFOLIO: Portfolio = {
     website: 'www.ayubshaban.com',
     instagram: 'archneeds254',
   },
+  resources: [
+    {
+      id: 'res1',
+      title: 'Guide to Sustainable Materials',
+      description: 'A comprehensive PDF guide on selecting and using sustainable and eco-friendly materials in modern construction.',
+      fileUrl: '#',
+    },
+    {
+      id: 'res2',
+      title: 'Principles of Biophilic Design',
+      description: 'An introductory document exploring how to integrate nature into architectural design to improve health and well-being.',
+      fileUrl: '#',
+    },
+  ],
 };
